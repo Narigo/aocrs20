@@ -1,9 +1,9 @@
 use regex::Regex;
 
-fn check_password_policy(file: &str) -> u64 {
+fn check_password_policy(file: &str, is_valid_fn: &dyn Fn(&str) -> bool) -> u64 {
     let mut count = 0;
     for line in file.lines() {
-        let is_valid = is_valid_password_with_policy(line);
+        let is_valid = is_valid_fn(line);
         if is_valid {
             count = count + 1;
         }
@@ -11,7 +11,7 @@ fn check_password_policy(file: &str) -> u64 {
     return count;
 }
 
-fn is_valid_password_with_policy(line: &str) -> bool {
+fn is_valid_password_with_policy_of_old_shop(line: &str) -> bool {
     let re = Regex::new(r"(\d+)-(\d+) (.): (.*)").unwrap();
     let groups = re.captures(line).unwrap();
     let minimum = groups.get(1).unwrap().as_str().parse::<u64>().unwrap();
@@ -37,16 +37,16 @@ mod test {
     use super::*;
 
     #[test]
-    fn check_example_policy() {
+    fn check_old_policy_for_example() {
         let file = include_str!("./example.txt");
-        let result = check_password_policy(file);
+        let result = check_password_policy(file, &is_valid_password_with_policy_of_old_shop);
         assert_eq!(2, result, "Should have two correct passwords");
     }
 
     #[test]
-    fn check_policy_for_input() {
+    fn check_old_policy_for_input() {
         let file = include_str!("./input.txt");
-        let result = check_password_policy(file);
+        let result = check_password_policy(file, &is_valid_password_with_policy_of_old_shop);
         assert_eq!(628, result, "Should have two correct passwords");
     }
 }
