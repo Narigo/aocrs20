@@ -32,6 +32,20 @@ fn is_valid_password_with_policy_of_old_shop(line: &str) -> bool {
     minimum <= count
 }
 
+fn is_valid_password_with_policy_of_new_shop(line: &str) -> bool {
+    let re = Regex::new(r"(\d+)-(\d+) (.): (.*)").unwrap();
+    let groups = re.captures(line).unwrap();
+    let first_position = groups.get(1).unwrap().as_str().parse::<usize>().unwrap();
+    let second_position = groups.get(2).unwrap().as_str().parse::<usize>().unwrap();
+    let character = groups.get(3).unwrap().as_str().chars().nth(0).unwrap();
+    let password = groups.get(4).unwrap().as_str();
+
+    let a = password.chars().nth(first_position - 1).unwrap();
+    let b = password.chars().nth(second_position - 1).unwrap();
+
+    (a == character || b == character) && !(a == character && b == character)
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -47,6 +61,20 @@ mod test {
     fn check_old_policy_for_input() {
         let file = include_str!("./input.txt");
         let result = check_password_policy(file, &is_valid_password_with_policy_of_old_shop);
-        assert_eq!(628, result, "Should have two correct passwords");
+        assert_eq!(628, result, "Should have 628 correct passwords");
+    }
+
+    #[test]
+    fn check_new_policy_for_example() {
+        let file = include_str!("./example.txt");
+        let result = check_password_policy(file, &is_valid_password_with_policy_of_new_shop);
+        assert_eq!(1, result, "Should have one correct password with the new policy");
+    }
+
+    #[test]
+    fn check_new_policy_for_input() {
+        let file = include_str!("./input.txt");
+        let result = check_password_policy(file, &is_valid_password_with_policy_of_new_shop);
+        assert_eq!(705, result, "Should have 705 correct passwords");
     }
 }
