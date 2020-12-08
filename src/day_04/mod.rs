@@ -1,4 +1,4 @@
-#[derive(Default)]
+#[derive(Default, Debug)]
 struct MaybePassport {
     byr: Option<String>, // (Birth Year)
     iyr: Option<String>, // (Issue Year)
@@ -33,42 +33,75 @@ impl PartialEq for ValidPassport {
     }
 }
 
-// struct InvalidPassportError {
+fn split_into_maybe_passports(file: &str) -> Vec<MaybePassport> {
+    let mut maybe_passports: Vec<MaybePassport> = Vec::new();
+    let mut last_maybe_passport = MaybePassport {
+        ..Default::default()
+    };
+    for line in file.lines() {
+        if line == "" {
+            maybe_passports.push(last_maybe_passport);
+            last_maybe_passport = MaybePassport {
+                ..Default::default()
+            };
+            continue;
+        }
 
-// };
+        let fields = line.split(" ");
+        for field in fields {
+            let mut key_value = field.split(":");
+            match key_value.next() {
+                Some("byr") => last_maybe_passport.byr = key_value.next().map(|s| s.to_owned()),
+                Some("iyr") => last_maybe_passport.iyr = key_value.next().map(|s| s.to_owned()),
+                Some("eyr") => last_maybe_passport.eyr = key_value.next().map(|s| s.to_owned()),
+                Some("hgt") => last_maybe_passport.hgt = key_value.next().map(|s| s.to_owned()),
+                Some("hcl") => last_maybe_passport.hcl = key_value.next().map(|s| s.to_owned()),
+                Some("ecl") => last_maybe_passport.ecl = key_value.next().map(|s| s.to_owned()),
+                Some("pid") => last_maybe_passport.pid = key_value.next().map(|s| s.to_owned()),
+                Some("cid") => last_maybe_passport.cid = key_value.next().map(|s| s.to_owned()),
+                _ => {}
+            }
+        }
+    }
+    maybe_passports.push(last_maybe_passport);
+    maybe_passports
+}
 
-fn to_passport(passport: MaybePassport) -> Result<ValidPassport, String> {
+fn to_passport(passport: &MaybePassport) -> Result<ValidPassport, String> {
     Ok(ValidPassport {
         byr: passport
             .byr
+            .as_ref()
             .ok_or("Birth Year missing")?
             .parse::<u64>()
             .or(Err("Birth Year invalid"))?,
         iyr: passport
             .iyr
+            .as_ref()
             .ok_or("Issue Year missing")?
             .parse::<u64>()
             .or(Err("Issue Year invalid"))?,
         eyr: passport
             .eyr
+            .as_ref()
             .ok_or("Expiration Year missing")?
             .parse::<u64>()
             .or(Err("Expiration Year invalid"))?,
-        hgt: passport.hgt.ok_or("Height missing")?,
-        hcl: passport.hcl.ok_or("Hair Color missing")?,
-        ecl: passport.ecl.ok_or("Eye Color missing")?,
-        pid: passport.pid.ok_or("Passport ID missing")?,
+        hgt: passport.hgt.clone().ok_or("Height missing")?,
+        hcl: passport.hcl.clone().ok_or("Hair Color missing")?,
+        ecl: passport.ecl.clone().ok_or("Eye Color missing")?,
+        pid: passport.pid.clone().ok_or("Passport ID missing")?,
     })
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
-    // use crate::util::read_file;
+    use crate::util::read_file;
 
     #[test]
     fn check_maybe_to_passport_nones() {
-        let result = to_passport(MaybePassport {
+        let result = to_passport(&MaybePassport {
             ..Default::default()
         });
         assert_eq!(
@@ -79,7 +112,7 @@ mod test {
     }
     #[test]
     fn check_maybe_to_passport_invalid_byr() {
-        let result = to_passport(MaybePassport {
+        let result = to_passport(&MaybePassport {
             byr: Some("not-a-number".to_owned()),
             ..Default::default()
         });
@@ -91,7 +124,7 @@ mod test {
     }
     #[test]
     fn check_maybe_to_passport_valid() {
-        let result = to_passport(MaybePassport {
+        let result = to_passport(&MaybePassport {
             ecl: Some("gry".to_owned()),
             pid: Some("860033327".to_owned()),
             eyr: Some("2020".to_owned()),
@@ -115,5 +148,25 @@ mod test {
             result,
             "Should get an error if birth year is not a number"
         )
+    }
+
+    #[test]
+    fn check_examples() {
+        let file = read_file("./src/day_04/example.txt");
+        let maybe_passports = split_into_maybe_passports(file.as_str());
+        assert_eq!(
+            4,
+            maybe_passports.len(),
+            "Should get 4 maybe passports from example"
+        );
+        let valid_passports: Vec<ValidPassport> = maybe_passports
+            .iter()
+            .filter_map(|p| to_passport(p).ok())
+            .collect();
+        assert_eq!(
+            2,
+            valid_passports.len(),
+            "Should have two valid passports in example"
+        );
     }
 }
