@@ -151,7 +151,7 @@ mod test {
     }
 
     #[test]
-    fn check_examples() {
+    fn check_example() {
         let file = read_file("./src/day_04/example.txt");
         let maybe_passports = split_into_maybe_passports(file.as_str());
         assert_eq!(
@@ -167,6 +167,21 @@ mod test {
             2,
             valid_passports.len(),
             "Should have two valid passports in example"
+        );
+    }
+
+    #[test]
+    fn check_input() {
+        let file = read_file("./src/day_04/input.txt");
+        let maybe_passports = split_into_maybe_passports(file.as_str());
+        let valid_passports: Vec<ValidPassport> = maybe_passports
+            .iter()
+            .filter_map(|p| to_passport(p).ok())
+            .collect();
+        assert_eq!(
+            200,
+            valid_passports.len(),
+            "Should have two valid passports in input"
         );
     }
 }
