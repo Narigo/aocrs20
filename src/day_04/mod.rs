@@ -1,3 +1,5 @@
+use regex::Regex;
+
 #[derive(Default, Debug)]
 struct MaybePassport {
     byr: Option<String>, // (Birth Year)
@@ -94,6 +96,177 @@ fn to_passport(passport: &MaybePassport) -> Result<ValidPassport, String> {
     })
 }
 
+trait IsValidByr
+where
+    Self: std::marker::Sized,
+{
+    fn is_valid_byr(self) -> Result<Self, String>;
+}
+impl IsValidByr for u64 {
+    fn is_valid_byr(self) -> Result<u64, String> {
+        let min: u64 = 1920;
+        let max: u64 = 2002;
+        if min <= self && self <= max {
+            Ok(self)
+        } else {
+            Err("Invalid birth year".to_owned())
+        }
+    }
+}
+
+trait IsValidIyr
+where
+    Self: std::marker::Sized,
+{
+    fn is_valid_iyr(self) -> Result<Self, String>;
+}
+impl IsValidIyr for u64 {
+    fn is_valid_iyr(self) -> Result<u64, String> {
+        let min: u64 = 2010;
+        let max: u64 = 2020;
+        if min <= self && self <= max {
+            Ok(self)
+        } else {
+            Err("Invalid issue year".to_owned())
+        }
+    }
+}
+
+trait IsValidEyr
+where
+    Self: std::marker::Sized,
+{
+    fn is_valid_eyr(self) -> Result<Self, String>;
+}
+impl IsValidEyr for u64 {
+    fn is_valid_eyr(self) -> Result<u64, String> {
+        let min: u64 = 2020;
+        let max: u64 = 2030;
+        if min <= self && self <= max {
+            Ok(self)
+        } else {
+            Err("Invalid expiration year".to_owned())
+        }
+    }
+}
+
+fn is_valid_cm_hgt(hgt: String) -> Result<String, &'static str> {
+    Ok(hgt)
+}
+
+fn is_valid_in_hgt(hgt: String) -> Result<String, &'static str> {
+    Ok(hgt)
+}
+
+fn is_valid_hgt(hgt: String) -> Result<String, &'static str> {
+    let re = Regex::new(r"(\d+)(in|cm)").unwrap();
+    match re.captures(hgt.as_str()) {
+        Some(groups) => match groups.get(2).map(|m| m.as_str()) {
+            Some("cm") => is_valid_cm_hgt(
+                groups
+                    .get(1)
+                    .map(|m| m.as_str())
+                    .and_then(|h| {
+                        if "150" <= h && h <= "193" {
+                            Some(h.to_owned())
+                        } else {
+                            None
+                        }
+                    })
+                    .ok_or("Invalid height in cm")?,
+            ),
+            Some("in") => is_valid_in_hgt(
+                groups
+                    .get(1)
+                    .map(|m| m.as_str())
+                    .and_then(|h| {
+                        if "59" <= h && h <= "76" {
+                            Some(h.to_owned())
+                        } else {
+                            None
+                        }
+                    })
+                    .ok_or("Invalid height in in")?,
+            ),
+            _ => Err("Invalid height (cm/in)"),
+        },
+        None => Err("Invalid height"),
+    }
+}
+
+fn is_valid_hcl(hcl: String) -> Result<String, &'static str> {
+    let re = Regex::new(r"^#[a-fA-F0-9]{6}$").unwrap();
+    if re.is_match(hcl.as_str()) {
+        Ok(hcl)
+    } else {
+        Err("Invalid hair color")
+    }
+}
+
+fn is_valid_ecl(ecl: String) -> Result<String, &'static str> {
+    let re = Regex::new(r"^(amb|blu|brn|gry|grn|hzl|oth)$").unwrap();
+    if re.is_match(ecl.as_str()) {
+        Ok(ecl)
+    } else {
+        Err("Invalid eye color")
+    }
+}
+
+fn is_valid_pid(pid: String) -> Result<String, &'static str> {
+    let re = Regex::new(r"^\d{9}$").unwrap();
+    if re.is_match(pid.as_str()) {
+        Ok(pid)
+    } else {
+        Err("Invalid hair color")
+    }
+}
+
+fn to_valid_passport(passport: &MaybePassport) -> Result<ValidPassport, String> {
+    Ok(ValidPassport {
+        byr: passport
+            .byr
+            .as_ref()
+            .ok_or("Birth Year missing")?
+            .parse::<u64>()
+            .or(Err("Birth Year invalid"))?
+            .is_valid_byr()?,
+        iyr: passport
+            .iyr
+            .as_ref()
+            .ok_or("Issue Year missing")?
+            .parse::<u64>()
+            .or(Err("Issue Year invalid"))?
+            .is_valid_iyr()?,
+        eyr: passport
+            .eyr
+            .as_ref()
+            .ok_or("Expiration Year missing")?
+            .parse::<u64>()
+            .or(Err("Expiration Year invalid"))?
+            .is_valid_eyr()?,
+        hgt: passport
+            .hgt
+            .clone()
+            .ok_or("Height missing")
+            .and_then(is_valid_hgt)?,
+        hcl: passport
+            .hcl
+            .clone()
+            .ok_or("Hair Color missing")
+            .and_then(is_valid_hcl)?,
+        ecl: passport
+            .ecl
+            .clone()
+            .ok_or("Eye Color missing")
+            .and_then(is_valid_ecl)?,
+        pid: passport
+            .pid
+            .clone()
+            .ok_or("Passport ID missing")
+            .and_then(is_valid_pid)?,
+    })
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -151,7 +324,7 @@ mod test {
     }
 
     #[test]
-    fn check_example() {
+    fn check_example_simple() {
         let file = read_file("./src/day_04/example.txt");
         let maybe_passports = split_into_maybe_passports(file.as_str());
         assert_eq!(
@@ -171,7 +344,7 @@ mod test {
     }
 
     #[test]
-    fn check_input() {
+    fn check_input_simple() {
         let file = read_file("./src/day_04/input.txt");
         let maybe_passports = split_into_maybe_passports(file.as_str());
         let valid_passports: Vec<ValidPassport> = maybe_passports
@@ -182,6 +355,46 @@ mod test {
             200,
             valid_passports.len(),
             "Should have two valid passports in input"
+        );
+    }
+
+    #[test]
+    fn check_example_advanced_invalid() {
+        let file = read_file("./src/day_04/example-2-invalid.txt");
+        let maybe_passports = split_into_maybe_passports(file.as_str());
+        assert_eq!(
+            4,
+            maybe_passports.len(),
+            "Should get 4 maybe passports from example"
+        );
+        let valid_passports: Vec<ValidPassport> = maybe_passports
+            .iter()
+            .filter_map(|p| to_valid_passport(p).ok())
+            .collect();
+        assert_eq!(
+            0,
+            valid_passports.len(),
+            "Should have no valid passports in example-2-invalid.txt"
+        );
+    }
+
+    #[test]
+    fn check_example_advanced_valid() {
+        let file = read_file("./src/day_04/example-2-valid.txt");
+        let maybe_passports = split_into_maybe_passports(file.as_str());
+        assert_eq!(
+            4,
+            maybe_passports.len(),
+            "Should get 4 maybe passports from example"
+        );
+        let valid_passports: Vec<ValidPassport> = maybe_passports
+            .iter()
+            .filter_map(|p| to_valid_passport(p).ok())
+            .collect();
+        assert_eq!(
+            4,
+            valid_passports.len(),
+            "Should have four valid passports in example-2-valid.txt"
         );
     }
 }
