@@ -354,7 +354,7 @@ mod test {
         assert_eq!(
             200,
             valid_passports.len(),
-            "Should have two valid passports in input"
+            "Should have 200 valid passports in input"
         );
     }
 
@@ -395,6 +395,21 @@ mod test {
             4,
             valid_passports.len(),
             "Should have four valid passports in example-2-valid.txt"
+        );
+    }
+
+    #[test]
+    fn check_input_advanced() {
+        let file = read_file("./src/day_04/input.txt");
+        let maybe_passports = split_into_maybe_passports(file.as_str());
+        let valid_passports: Vec<ValidPassport> = maybe_passports
+            .iter()
+            .filter_map(|p| to_valid_passport(p).ok())
+            .collect();
+        assert_eq!(
+            116,
+            valid_passports.len(),
+            "Should have 116 valid passports in input"
         );
     }
 }
