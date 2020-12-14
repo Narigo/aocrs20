@@ -74,4 +74,12 @@ mod test {
         assert_eq!(4, result.column, "column should be 4");
         assert_eq!(820, result.id, "id should be 820");
     }
+
+    #[test]
+    fn check_highest_seat_id() {
+        let file = read_file("./src/day_05/input.txt");
+        let lines = file.lines();
+        let result = lines.map(get_seat).max_by_key(|seat| seat.id).unwrap();
+        assert_eq!(991, result.id, "highest seat id should be 991");
+    }
 }
