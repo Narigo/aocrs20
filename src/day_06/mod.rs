@@ -28,4 +28,12 @@ mod test {
         let expected = 3 + 3 + 3 + 1 + 1;
         assert_eq!(expected, result);
     }
+
+    #[test]
+    fn check_input() {
+        let file = read_file("./src/day_06/input.txt");
+        let splitted = split_into_parts(&file);
+        let result = amount_of_questions_answered(splitted);
+        assert_eq!(6551, result);
+    }
 }
