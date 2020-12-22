@@ -62,4 +62,12 @@ mod test {
         let result = amount_of_questions_answered_by_all(splitted);
         assert_eq!(6, result);
     }
+
+    #[test]
+    fn check_input_for_all() {
+        let file = read_file("./src/day_06/input.txt");
+        let splitted = split_into_parts(&file);
+        let result = amount_of_questions_answered_by_all(splitted);
+        assert_eq!(3358, result);
+    }
 }
