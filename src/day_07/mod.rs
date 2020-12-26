@@ -1,8 +1,10 @@
 use regex::Regex;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 type ColoredBag = String;
 type RuleSet = HashMap<ColoredBag, Vec<(u32, ColoredBag)>>;
+type ContainedBySet = HashSet<ColoredBag>;
 
 fn split_amount_and_color(input: &str) -> Result<(u32, String), String> {
     let bag_re = Regex::new(r"^(\d+) (.*)\s*bags?$").unwrap();
@@ -52,16 +54,40 @@ fn file_to_rule_set(input: &String) -> Result<RuleSet, String> {
     Ok(rules)
 }
 
+fn contained_by_from_rules(rules: &RuleSet, color: &ColoredBag) -> ContainedBySet {
+    let mut values: ContainedBySet = HashSet::new();
+    for entry in rules.iter() {
+        let entry_values = entry.1;
+        for colored_bag in entry_values {
+            if colored_bag.1.eq(color) {
+                values.insert(entry.0.clone());
+                let contained_by = contained_by_from_rules(rules, entry.0);
+                values.union(&contained_by);
+            }
+        }
+    }
+    values
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
     use crate::util::*;
 
     #[test]
-    fn check_example() {
+    fn check_rules_set() {
         let file = read_file("./src/day_07/example.txt");
         let rules = file_to_rule_set(&file).expect("Should be possible to read as rules");
         println!("{:?}", rules);
         assert_eq!(9, rules.len());
+    }
+
+    #[test]
+    fn check_example() {
+        let file = read_file("./src/day_07/example.txt");
+        let rules = file_to_rule_set(&file).expect("Should be possible to read as rules");
+        let contained_by = contained_by_from_rules(&rules, &"shiny gold".to_owned());
+        println!("{:?}", contained_by);
+        assert_eq!(9, contained_by.len());
     }
 }
