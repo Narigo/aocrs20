@@ -121,4 +121,12 @@ mod test {
         let result = amount_of_bags_necessary(&rules, &"shiny gold".to_owned()) - 1;
         assert_eq!(126, result);
     }
+
+    #[test]
+    fn check_input_for_star_2() {
+        let file = read_file("./src/day_07/input.txt");
+        let rules = file_to_rule_set(&file).expect("Should be possible to read as rules");
+        let result = amount_of_bags_necessary(&rules, &"shiny gold".to_owned()) - 1;
+        assert_eq!(41559, result);
+    }
 }
