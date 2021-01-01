@@ -67,4 +67,12 @@ mod test {
         let last_state = run_instructions_until_loop(instructions);
         assert_eq!(5, last_state);
     }
+
+    #[test]
+    fn check_input_star_1() {
+        let file = read_file("./src/day_08/input.txt");
+        let instructions = file_to_instructions(&file);
+        let last_state = run_instructions_until_loop(instructions);
+        assert_eq!(1489, last_state);
+    }
 }
