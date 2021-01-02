@@ -27,11 +27,15 @@ fn file_to_instructions(input: &str) -> Vec<Instruction> {
     instructions
 }
 
-fn run_instructions_until_loop(instructions: Vec<Instruction>) -> i32 {
+fn find_corrupt_instruction(instructions: Vec<Instruction>) -> Result<i32, i32> {
+    Ok(0)
+}
+
+fn run_instructions_until_loop(instructions: Vec<Instruction>) -> Result<i32, i32> {
     let mut state: i32 = 0;
     let mut visited_lines: HashSet<usize> = HashSet::new();
     let mut current_line: usize = 0;
-    loop {
+    while current_line < instructions.len() {
         let instruction = instructions
             .get(current_line as usize)
             .expect("Should have a line");
@@ -49,10 +53,10 @@ fn run_instructions_until_loop(instructions: Vec<Instruction>) -> i32 {
             }
         }
         if visited_lines.contains(&current_line) {
-            break;
+            return Err(state);
         }
     }
-    state
+    Ok(state)
 }
 
 #[cfg(test)]
@@ -65,7 +69,7 @@ mod test {
         let file = read_file("./src/day_08/example.txt");
         let instructions = file_to_instructions(&file);
         let last_state = run_instructions_until_loop(instructions);
-        assert_eq!(5, last_state);
+        assert_eq!(Err(5), last_state);
     }
 
     #[test]
@@ -73,6 +77,14 @@ mod test {
         let file = read_file("./src/day_08/input.txt");
         let instructions = file_to_instructions(&file);
         let last_state = run_instructions_until_loop(instructions);
-        assert_eq!(1489, last_state);
+        assert_eq!(Err(1489), last_state);
+    }
+
+    #[test]
+    fn check_example_star_2() {
+        let file = read_file("./src/day_08/example.txt");
+        let instructions = file_to_instructions(&file);
+        let last_state = find_corrupt_instruction(instructions);
+        assert_eq!(Ok(6), last_state);
     }
 }
