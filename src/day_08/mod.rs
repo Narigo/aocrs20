@@ -109,4 +109,12 @@ mod test {
         let last_state = find_corrupt_instruction(instructions);
         assert_eq!(Ok(8), last_state);
     }
+
+    #[test]
+    fn check_input_star_2() {
+        let file = read_file("./src/day_08/input.txt");
+        let instructions = file_to_instructions(&file);
+        let last_state = find_corrupt_instruction(instructions);
+        assert_eq!(Ok(1539), last_state);
+    }
 }
