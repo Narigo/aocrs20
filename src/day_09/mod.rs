@@ -36,26 +36,25 @@ fn find_sum_of_first_invalid(input: &str, number: u64) -> Vec<u64> {
     let mut result = Vec::new();
     for line in input.lines() {
         let n = line.parse::<u64>().unwrap();
-        println!("len={}, n={}", result.len(), n);
         result.insert(result.len(), n);
         let mut current_sum = result.iter().sum::<u64>();
-        if current_sum == number {
-            return result;
-        }
         while current_sum > number {
             result.remove(0);
             current_sum = result.iter().sum::<u64>();
+        }
+        if current_sum == number {
+            return result;
         }
     }
     result
 }
 
 fn minimum(set: &Vec<u64>) -> u64 {
-    *set.get(set.len() - 1).unwrap()
+    *set.iter().min().expect("should have a minimum")
 }
 
 fn maximum(set: &Vec<u64>) -> u64 {
-    *(set.get(0).unwrap())
+    *set.iter().max().expect("should have a minimum")
 }
 
 #[cfg(test)]
@@ -82,7 +81,6 @@ mod test {
         let file = read_file("./src/day_09/example.txt");
         let first_invalid = find_first_invalid(&file, 5);
         let summed_numbers = find_sum_of_first_invalid(&file, first_invalid);
-        println!("numbers: {:?}", summed_numbers);
         let min = minimum(&summed_numbers);
         let max = maximum(&summed_numbers);
         assert_eq!(62, min + max);
