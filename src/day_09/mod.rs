@@ -85,4 +85,14 @@ mod test {
         let max = maximum(&summed_numbers);
         assert_eq!(62, min + max);
     }
+
+    #[test]
+    fn check_input_day_09_star2() {
+        let file = read_file("./src/day_09/input.txt");
+        let first_invalid = find_first_invalid(&file, 25);
+        let summed_numbers = find_sum_of_first_invalid(&file, first_invalid);
+        let min = minimum(&summed_numbers);
+        let max = maximum(&summed_numbers);
+        assert_eq!(96081673, min + max);
+    }
 }
