@@ -54,7 +54,7 @@ fn minimum(set: &Vec<u64>) -> u64 {
 }
 
 fn maximum(set: &Vec<u64>) -> u64 {
-    *set.iter().max().expect("should have a minimum")
+    *set.iter().max().expect("should have a maximum")
 }
 
 #[cfg(test)]
