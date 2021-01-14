@@ -58,4 +58,12 @@ mod test {
         assert_eq!(Some(&10), result.0.get(&3));
         assert_eq!(220, get_multiplication_value(result.0));
     }
+
+    #[test]
+    fn check_input_day_10() {
+        let file = read_file("./src/day_10/input.txt");
+        let adapters = adapters_from_input(&file);
+        let result = get_highest_joltage(&adapters);
+        assert_eq!(2738, get_multiplication_value(result.0));
+    }
 }
