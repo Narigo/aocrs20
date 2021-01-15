@@ -34,6 +34,14 @@ fn get_multiplication_value(adapter_differences: Differences) -> u64 {
     adapter_differences.get(&1).unwrap_or(&0) * adapter_differences.get(&3).unwrap_or(&0)
 }
 
+fn find_possible_arrangements(adapters: &Vec<Jolts>) -> u64 {
+    let mut sorted_adapters = adapters.clone();
+    sorted_adapters.sort();
+    let mut found = 0;
+    found += 1;
+    found
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -65,5 +73,13 @@ mod test {
         let adapters = adapters_from_input(&file);
         let result = get_highest_joltage(&adapters);
         assert_eq!(2738, get_multiplication_value(result.0));
+    }
+
+    #[test]
+    fn check_example1_day_10_star2() {
+        let file = read_file("./src/day_10/example_1.txt");
+        let adapters = adapters_from_input(&file);
+        let result = find_possible_arrangements(&adapters);
+        assert_eq!(8, result);
     }
 }
