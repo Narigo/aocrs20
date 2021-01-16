@@ -37,6 +37,10 @@ fn get_multiplication_value(adapter_differences: Differences) -> u64 {
 fn find_possible_arrangements(adapters: &Vec<Jolts>) -> u64 {
     let mut sorted_adapters = adapters.clone();
     sorted_adapters.sort();
+    let mut differences: Vec<u64> = vec![0];
+    for adapter in sorted_adapters.iter() {
+        differences.push(*adapter);
+    }
     let mut found = 0;
     found += 1;
     found
