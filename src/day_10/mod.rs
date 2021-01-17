@@ -12,6 +12,9 @@ fn get_highest_joltage(set: &Vec<Jolts>) -> (Differences, Jolts) {
         if *current_joltage_adapter == last_possible_joltage + 1 {
             differences.insert(1, differences.get(&1).unwrap_or(&0) + 1);
         }
+        if *current_joltage_adapter == last_possible_joltage + 2 {
+            differences.insert(2, differences.get(&2).unwrap_or(&0) + 2);
+        }
         if *current_joltage_adapter == last_possible_joltage + 3 {
             differences.insert(3, differences.get(&3).unwrap_or(&1) + 1);
         }
@@ -37,13 +40,45 @@ fn get_multiplication_value(adapter_differences: Differences) -> u64 {
 fn find_possible_arrangements(adapters: &Vec<Jolts>) -> u64 {
     let mut sorted_adapters = adapters.clone();
     sorted_adapters.sort();
-    let mut differences: Vec<u64> = vec![0];
-    for adapter in sorted_adapters.iter() {
-        differences.push(*adapter);
+    sorted_adapters.push(sorted_adapters.last().unwrap() + 3);
+    let mut pow_2 = 0;
+    let mut pow_7 = 0;
+    let mut b = 0;
+    let mut c = *sorted_adapters.get(0).unwrap();
+    let mut d = *sorted_adapters.get(1).unwrap();
+    let mut e = *sorted_adapters.get(2).unwrap();
+    println!(
+        "b={},c={},d={},e={}, pow_2 = {}, pow_7 = {}",
+        b, c, d, e, pow_2, pow_7
+    );
+    if e - b == 3 {
+        pow_2 += 2;
+    } else if e - c == 2 {
+        pow_2 += 1;
     }
-    let mut found = 0;
-    found += 1;
-    found
+    let mut a = b;
+    b = c;
+    c = d;
+    d = e;
+    for adapter in sorted_adapters[3..].iter() {
+        e = *adapter;
+        if e - a == 4 {
+            pow_7 += 1;
+            pow_2 -= 2;
+        } else if e - c == 2 {
+            pow_2 += 1;
+        }
+        println!(
+            "a={},b={},c={},d={},e={}, pow_2 = {}, pow_7 = {}",
+            a, b, c, d, e, pow_2, pow_7
+        );
+        a = b;
+        b = c;
+        c = d;
+        d = e;
+    }
+    println!("pow_2 = {}, pow_7 = {}", pow_2, pow_7);
+    (2 as u64).pow(pow_2) * (7 as u64).pow(pow_7)
 }
 
 #[cfg(test)]
@@ -85,5 +120,13 @@ mod test {
         let adapters = adapters_from_input(&file);
         let result = find_possible_arrangements(&adapters);
         assert_eq!(8, result);
+    }
+
+    #[test]
+    fn check_example2_day_10_star2() {
+        let file = read_file("./src/day_10/example_2.txt");
+        let adapters = adapters_from_input(&file);
+        let result = find_possible_arrangements(&adapters);
+        assert_eq!(19208, result);
     }
 }
