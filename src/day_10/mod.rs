@@ -55,6 +55,8 @@ fn find_possible_arrangements(adapters: &Vec<Jolts>) -> u64 {
         pow_2 += 2;
     } else if e - c == 2 {
         pow_2 += 1;
+    } else if d - b == 2 {
+        pow_2 += 1;
     }
     let mut a = b;
     b = c;
@@ -128,5 +130,13 @@ mod test {
         let adapters = adapters_from_input(&file);
         let result = find_possible_arrangements(&adapters);
         assert_eq!(19208, result);
+    }
+
+    #[test]
+    fn check_input_day_10_star2() {
+        let file = read_file("./src/day_10/input.txt");
+        let adapters = adapters_from_input(&file);
+        let result = find_possible_arrangements(&adapters);
+        assert_eq!(74049191673856, result);
     }
 }
