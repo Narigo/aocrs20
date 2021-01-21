@@ -1,5 +1,6 @@
 use std::fmt;
 
+#[derive(Debug, PartialEq)]
 enum Cell {
     Occupied,
     Empty,
@@ -112,7 +113,7 @@ mod test {
     fn check_adjacent_cells() {
         let file = read_file("./src/day_11/adjacent_cells.txt");
         let grid = input_to_grid(&file);
-        assert_eq!(3, grid.get_occupied_adjacent_cells(1, 1));
+        assert_eq!(4, grid.get_occupied_adjacent_cells(1, 1));
         assert_eq!(2, grid.get_occupied_adjacent_cells(0, 0));
         assert_eq!(4, grid.get_occupied_adjacent_cells(1, 0));
         assert_eq!(2, grid.get_occupied_adjacent_cells(3, 2));
