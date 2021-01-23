@@ -37,15 +37,32 @@ impl fmt::Display for Grid {
 
 trait GridRules {
     fn get_occupied_adjacent_cells(&self, x: usize, y: usize) -> usize;
-    fn get_next_state(&self, x: usize, y: usize) -> &Cell;
+    fn get_next_state(&self, x: usize, y: usize) -> Cell;
 }
 
 impl GridRules for Grid {
-    fn get_next_state(&self, x: usize, y: usize) -> &Cell {
+    fn get_next_state(&self, x: usize, y: usize) -> Cell {
         self.cells
             .get(y)
             .and_then(|row| row.get(x))
-            .unwrap_or(&Cell::Floor)
+            .map(|cell| match cell {
+                Cell::Floor => Cell::Floor,
+                Cell::Empty => {
+                    if self.get_occupied_adjacent_cells(x, y) == 0 {
+                        Cell::Occupied
+                    } else {
+                        Cell::Empty
+                    }
+                }
+                Cell::Occupied => {
+                    if self.get_occupied_adjacent_cells(x, y) >= 4 {
+                        Cell::Empty
+                    } else {
+                        Cell::Occupied
+                    }
+                }
+            })
+            .unwrap_or(Cell::Floor)
     }
 
     fn get_occupied_adjacent_cells(&self, x: usize, y: usize) -> usize {
@@ -131,10 +148,11 @@ mod test {
     fn check_next_state_of_cell() {
         let file = read_file("./src/day_11/adjacent_cells.txt");
         let grid = input_to_grid(&file);
-        assert_eq!(Cell::Occupied, *grid.get_next_state(1, 1));
-        assert_eq!(Cell::Floor, *grid.get_next_state(1, 0));
-        assert_eq!(Cell::Empty, *grid.get_next_state(0, 0));
-        assert_eq!(Cell::Occupied, *grid.get_next_state(2, 3));
+        assert_eq!(Cell::Empty, grid.get_next_state(1, 1));
+        assert_eq!(Cell::Occupied, grid.get_next_state(0, 1));
+        assert_eq!(Cell::Floor, grid.get_next_state(1, 0));
+        assert_eq!(Cell::Empty, grid.get_next_state(0, 0));
+        assert_eq!(Cell::Occupied, grid.get_next_state(2, 3));
     }
 
     #[test]
