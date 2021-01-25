@@ -7,6 +7,7 @@ enum Cell {
     Floor,
 }
 
+#[derive(Debug, PartialEq)]
 struct Grid {
     cells: Vec<Vec<Cell>>,
     height: usize,
@@ -37,11 +38,12 @@ impl fmt::Display for Grid {
 
 trait GridRules {
     fn get_occupied_adjacent_cells(&self, x: usize, y: usize) -> usize;
-    fn get_next_state(&self, x: usize, y: usize) -> Cell;
+    fn get_next_state_of_cell(&self, x: usize, y: usize) -> Cell;
+    fn get_next_state(&self) -> Grid;
 }
 
 impl GridRules for Grid {
-    fn get_next_state(&self, x: usize, y: usize) -> Cell {
+    fn get_next_state_of_cell(&self, x: usize, y: usize) -> Cell {
         self.cells
             .get(y)
             .and_then(|row| row.get(x))
@@ -92,6 +94,22 @@ impl GridRules for Grid {
                 _ => 0,
             }
         })
+    }
+
+    fn get_next_state(&self) -> Grid {
+        let mut grid: Vec<Vec<Cell>> = Vec::new();
+        for y in 0..self.width {
+            let mut cells: Vec<Cell> = Vec::new();
+            for x in 0..self.height {
+                cells.push(self.get_next_state_of_cell(x, y));
+            }
+            grid.push(cells);
+        }
+        Grid {
+            cells: grid,
+            height: self.height,
+            width: self.width,
+        }
     }
 }
 
@@ -148,11 +166,47 @@ mod test {
     fn check_next_state_of_cell() {
         let file = read_file("./src/day_11/adjacent_cells.txt");
         let grid = input_to_grid(&file);
-        assert_eq!(Cell::Empty, grid.get_next_state(1, 1));
-        assert_eq!(Cell::Occupied, grid.get_next_state(0, 1));
-        assert_eq!(Cell::Floor, grid.get_next_state(1, 0));
-        assert_eq!(Cell::Empty, grid.get_next_state(0, 0));
-        assert_eq!(Cell::Occupied, grid.get_next_state(2, 3));
+        assert_eq!(Cell::Empty, grid.get_next_state_of_cell(1, 1));
+        assert_eq!(Cell::Occupied, grid.get_next_state_of_cell(0, 1));
+        assert_eq!(Cell::Floor, grid.get_next_state_of_cell(1, 0));
+        assert_eq!(Cell::Empty, grid.get_next_state_of_cell(0, 0));
+        assert_eq!(Cell::Occupied, grid.get_next_state_of_cell(2, 3));
+    }
+
+    #[test]
+    fn check_next_state_of_grid() {
+        let file = read_file("./src/day_11/adjacent_cells.txt");
+        let file2 = read_file("./src/day_11/adjacent_cells_2.txt");
+        let grid = input_to_grid(&file);
+        let grid2 = input_to_grid(&file2);
+        let next_grid = grid.get_next_state();
+        assert_eq!(grid2, next_grid);
+    }
+
+    #[test]
+    fn check_next_states_of_grid_for_example() {
+        let file1 = read_file("./src/day_11/example.txt");
+        let file2 = read_file("./src/day_11/example_state_2.txt");
+        let file3 = read_file("./src/day_11/example_state_3.txt");
+        let file4 = read_file("./src/day_11/example_state_4.txt");
+        let file5 = read_file("./src/day_11/example_state_5.txt");
+        let file6 = read_file("./src/day_11/example_state_6.txt");
+        let grid = input_to_grid(&file1);
+        let grid2 = input_to_grid(&file2);
+        let grid3 = input_to_grid(&file3);
+        let grid4 = input_to_grid(&file4);
+        let grid5 = input_to_grid(&file5);
+        let grid6 = input_to_grid(&file6);
+        let grid = grid.get_next_state();
+        assert_eq!(grid2, grid);
+        let grid = grid.get_next_state();
+        assert_eq!(grid3, grid);
+        let grid = grid.get_next_state();
+        assert_eq!(grid4, grid);
+        let grid = grid.get_next_state();
+        assert_eq!(grid5, grid);
+        let grid = grid.get_next_state();
+        assert_eq!(grid6, grid);
     }
 
     #[test]
