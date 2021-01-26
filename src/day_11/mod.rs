@@ -40,6 +40,7 @@ trait GridRules {
     fn get_occupied_adjacent_cells(&self, x: usize, y: usize) -> usize;
     fn get_next_state_of_cell(&self, x: usize, y: usize) -> Cell;
     fn get_next_state(&self) -> Grid;
+    fn get_last_state(&self) -> Grid;
 }
 
 impl GridRules for Grid {
@@ -109,6 +110,15 @@ impl GridRules for Grid {
             cells: grid,
             height: self.height,
             width: self.width,
+        }
+    }
+
+    fn get_last_state(&self) -> Grid {
+        let next_grid = self.get_next_state();
+        if next_grid == *self {
+            next_grid
+        } else {
+            next_grid.get_last_state()
         }
     }
 }
@@ -207,6 +217,16 @@ mod test {
         assert_eq!(grid5, grid);
         let grid = grid.get_next_state();
         assert_eq!(grid6, grid);
+    }
+
+    #[test]
+    fn check_last_state_of_grid_for_example() {
+        let file = read_file("./src/day_11/example.txt");
+        let last_file = read_file("./src/day_11/example_state_6.txt");
+        let grid = input_to_grid(&file);
+        let last_grid = input_to_grid(&last_file);
+        let grid = grid.get_last_state();
+        assert_eq!(last_grid, grid);
     }
 
     #[test]
