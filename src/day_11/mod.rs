@@ -41,6 +41,7 @@ trait GridRules {
     fn get_next_state_of_cell(&self, x: usize, y: usize) -> Cell;
     fn get_next_state(&self) -> Grid;
     fn get_last_state(&self) -> Grid;
+    fn get_number_of_occupied_seats(&self) -> usize;
 }
 
 impl GridRules for Grid {
@@ -120,6 +121,10 @@ impl GridRules for Grid {
         } else {
             next_grid.get_last_state()
         }
+    }
+
+    fn get_number_of_occupied_seats(&self) -> usize {
+        0
     }
 }
 
@@ -227,6 +232,14 @@ mod test {
         let last_grid = input_to_grid(&last_file);
         let grid = grid.get_last_state();
         assert_eq!(last_grid, grid);
+    }
+
+    #[test]
+    fn check_number_of_occupied_seats() {
+        let file = read_file("./src/day_11/example_state_6.txt");
+        let grid = input_to_grid(&file);
+        let number_of_seats = grid.get_number_of_occupied_seats();
+        assert_eq!(37, number_of_seats);
     }
 
     #[test]
