@@ -124,7 +124,16 @@ impl GridRules for Grid {
     }
 
     fn get_number_of_occupied_seats(&self) -> usize {
-        0
+        let mut sum = 0;
+        for row in self.cells.iter() {
+            for cell in row.iter() {
+                match cell {
+                    Cell::Occupied => sum = sum + 1,
+                    _ => {}
+                }
+            }
+        }
+        sum
     }
 }
 
