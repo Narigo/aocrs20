@@ -100,9 +100,9 @@ impl GridRules for Grid {
 
     fn get_next_state(&self) -> Grid {
         let mut grid: Vec<Vec<Cell>> = Vec::new();
-        for y in 0..self.width {
+        for y in 0..self.height {
             let mut cells: Vec<Cell> = Vec::new();
-            for x in 0..self.height {
+            for x in 0..self.width {
                 cells.push(self.get_next_state_of_cell(x, y));
             }
             grid.push(cells);
@@ -255,7 +255,8 @@ mod test {
     fn check_input_day_11() {
         let file = read_file("./src/day_11/input.txt");
         let grid = input_to_grid(&file);
-        assert_eq!(99, grid.height);
-        assert_eq!(90, grid.width);
+        let last_grid = grid.get_last_state();
+        let number_of_seats = last_grid.get_number_of_occupied_seats();
+        assert_eq!(2283, number_of_seats);
     }
 }
