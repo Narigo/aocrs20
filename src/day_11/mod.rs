@@ -71,7 +71,103 @@ impl GridRules for Grid {
     }
 
     fn get_occupied_neighbor_seats(&self, x: usize, y: usize) -> usize {
-        0
+        fn occupied_seat(seat: Option<&Cell>) -> bool {
+            match seat {
+                Some(Cell::Occupied) => true,
+                _ => false,
+            }
+        }
+        fn occupied_seat2(matrix_spot: &mut bool, seat: Option<&Cell>) -> () {
+            if occupied_seat(seat) {
+                *matrix_spot = true;
+            }
+        }
+
+        let mut found_matrix = [
+            [false, false, false],
+            [false, true, false],
+            [false, false, false],
+        ];
+        // all above
+        if y > 0 {
+            for diff in 0..y {
+                let next_y = y - 1 - diff;
+                if !found_matrix[0][0] {
+                    if x > diff {
+                        let next_x = x - 1 - diff;
+                        let row = self.cells.get(next_y).unwrap();
+                        occupied_seat2(&mut found_matrix[0][0], row.get(next_x));
+                    }
+                }
+            }
+            for diff in 0..y {
+                let next_y = y - 1 - diff;
+                if !found_matrix[0][1] {
+                    let row = self.cells.get(next_y).unwrap();
+                    occupied_seat2(&mut found_matrix[0][1], row.get(x));
+                }
+            }
+            for diff in 0..y {
+                let next_y = y - 1 - diff;
+                if !found_matrix[0][2] {
+                    let row = self.cells.get(next_y).unwrap();
+                    let next_x = x + 1 + diff;
+                    if next_x < row.len() {
+                        occupied_seat2(&mut found_matrix[0][2], row.get(next_x));
+                    }
+                }
+            }
+        }
+
+        // mid row
+        let current_row = self.cells.get(y).unwrap();
+        for diff in 0..x {
+            if !found_matrix[1][0] {
+                let next_x = x - 1 - diff;
+                occupied_seat2(&mut found_matrix[1][0], current_row.get(next_x));
+            }
+        }
+        if x < current_row.len() - 1 {
+            for next_x in (x + 1)..current_row.len() {
+                if !found_matrix[1][2] {
+                    occupied_seat2(&mut found_matrix[1][2], current_row.get(next_x));
+                }
+            }
+        }
+        // last row
+        if y < self.cells.len() - 1 {
+            for next_y in (y + 1)..self.cells.len() {
+                if !found_matrix[2][0] {
+                    let diff = next_y - y;
+                    if x >= diff {
+                        let row = self.cells.get(next_y).unwrap();
+                        let next_x = x - diff;
+                        occupied_seat2(&mut found_matrix[2][0], row.get(next_x));
+                    }
+                }
+            }
+            for next_y in (y + 1)..self.cells.len() {
+                if !found_matrix[2][1] {
+                    let row = self.cells.get(next_y).unwrap();
+                    occupied_seat2(&mut found_matrix[2][1], row.get(x));
+                }
+            }
+            for next_y in (y + 1)..self.cells.len() {
+                if !found_matrix[2][2] {
+                    let diff = next_y - y;
+                    let row = self.cells.get(next_y).unwrap();
+                    let next_x = x + diff;
+                    if next_x < row.len() {
+                        occupied_seat2(&mut found_matrix[2][2], row.get(next_x));
+                    }
+                }
+            }
+        }
+        found_matrix.iter().fold(0, |sum, bs| {
+            sum + bs
+                .iter()
+                .fold(0, |inter_sum, b| inter_sum + (if *b { 1 } else { 0 }))
+        }) - 1
     }
 
     fn get_occupied_adjacent_cells(&self, x: usize, y: usize) -> usize {
