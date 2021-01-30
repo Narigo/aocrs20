@@ -38,6 +38,7 @@ impl fmt::Display for Grid {
 
 trait GridRules {
     fn get_occupied_adjacent_cells(&self, x: usize, y: usize) -> usize;
+    fn get_occupied_neighbor_seats(&self, x: usize, y: usize) -> usize;
     fn get_next_state_of_cell(&self, x: usize, y: usize) -> Cell;
     fn get_next_state(&self) -> Grid;
     fn get_last_state(&self) -> Grid;
@@ -67,6 +68,10 @@ impl GridRules for Grid {
                 }
             })
             .unwrap_or(Cell::Floor)
+    }
+
+    fn get_occupied_neighbor_seats(&self, x: usize, y: usize) -> usize {
+        0
     }
 
     fn get_occupied_adjacent_cells(&self, x: usize, y: usize) -> usize {
@@ -252,11 +257,19 @@ mod test {
     }
 
     #[test]
-    fn check_input_day_11() {
+    fn check_input_day_11_star1() {
         let file = read_file("./src/day_11/input.txt");
         let grid = input_to_grid(&file);
         let last_grid = grid.get_last_state();
         let number_of_seats = last_grid.get_number_of_occupied_seats();
         assert_eq!(2283, number_of_seats);
+    }
+
+    #[test]
+    fn check_example_day11_star2() {
+        let file = read_file("./src/day_11/example_star2_1.txt");
+        let grid = input_to_grid(&file);
+        let occupied_neighbor_seats = grid.get_occupied_neighbor_seats(3, 4);
+        assert_eq!(8, occupied_neighbor_seats);
     }
 }
