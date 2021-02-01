@@ -77,22 +77,24 @@ impl GridRules for Grid {
                 _ => false,
             }
         }
-        fn occupied_seat2(matrix_spot: &mut bool, seat: Option<&Cell>) -> () {
-            if occupied_seat(seat) {
-                *matrix_spot = true;
-            }
+        fn occupied_seat2(matrix_spot: &mut Cell, seat: Option<&Cell>) {
+            *matrix_spot = match seat {
+                Some(Cell::Occupied) => Cell::Occupied,
+                Some(Cell::Empty) => Cell::Empty,
+                _ => Cell::Floor,
+            };
         }
 
         let mut found_matrix = [
-            [false, false, false],
-            [false, true, false],
-            [false, false, false],
+            [Cell::Floor, Cell::Floor, Cell::Floor],
+            [Cell::Floor, Cell::Floor, Cell::Floor],
+            [Cell::Floor, Cell::Floor, Cell::Floor],
         ];
         // all above
         if y > 0 {
             for diff in 0..y {
                 let next_y = y - 1 - diff;
-                if !found_matrix[0][0] {
+                if let Cell::Floor = found_matrix[0][0] {
                     if x > diff {
                         let next_x = x - 1 - diff;
                         let row = self.cells.get(next_y).unwrap();
@@ -102,14 +104,14 @@ impl GridRules for Grid {
             }
             for diff in 0..y {
                 let next_y = y - 1 - diff;
-                if !found_matrix[0][1] {
+                if let Cell::Floor = found_matrix[0][1] {
                     let row = self.cells.get(next_y).unwrap();
                     occupied_seat2(&mut found_matrix[0][1], row.get(x));
                 }
             }
             for diff in 0..y {
                 let next_y = y - 1 - diff;
-                if !found_matrix[0][2] {
+                if let Cell::Floor = found_matrix[0][2] {
                     let row = self.cells.get(next_y).unwrap();
                     let next_x = x + 1 + diff;
                     if next_x < row.len() {
@@ -122,14 +124,14 @@ impl GridRules for Grid {
         // mid row
         let current_row = self.cells.get(y).unwrap();
         for diff in 0..x {
-            if !found_matrix[1][0] {
+            if let Cell::Floor = found_matrix[1][0] {
                 let next_x = x - 1 - diff;
                 occupied_seat2(&mut found_matrix[1][0], current_row.get(next_x));
             }
         }
         if x < current_row.len() - 1 {
             for next_x in (x + 1)..current_row.len() {
-                if !found_matrix[1][2] {
+                if let Cell::Floor = found_matrix[1][2] {
                     occupied_seat2(&mut found_matrix[1][2], current_row.get(next_x));
                 }
             }
@@ -137,7 +139,7 @@ impl GridRules for Grid {
         // last row
         if y < self.cells.len() - 1 {
             for next_y in (y + 1)..self.cells.len() {
-                if !found_matrix[2][0] {
+                if let Cell::Floor = found_matrix[2][0] {
                     let diff = next_y - y;
                     if x >= diff {
                         let row = self.cells.get(next_y).unwrap();
@@ -147,13 +149,13 @@ impl GridRules for Grid {
                 }
             }
             for next_y in (y + 1)..self.cells.len() {
-                if !found_matrix[2][1] {
+                if let Cell::Floor = found_matrix[2][1] {
                     let row = self.cells.get(next_y).unwrap();
                     occupied_seat2(&mut found_matrix[2][1], row.get(x));
                 }
             }
             for next_y in (y + 1)..self.cells.len() {
-                if !found_matrix[2][2] {
+                if let Cell::Floor = found_matrix[2][2] {
                     let diff = next_y - y;
                     let row = self.cells.get(next_y).unwrap();
                     let next_x = x + diff;
@@ -163,11 +165,11 @@ impl GridRules for Grid {
                 }
             }
         }
-        found_matrix.iter().fold(0, |sum, bs| {
-            sum + bs
-                .iter()
-                .fold(0, |inter_sum, b| inter_sum + (if *b { 1 } else { 0 }))
-        }) - 1
+        found_matrix.iter().fold(0, |sum, seats| {
+            sum + seats.iter().fold(0, |inter_sum, seat| {
+                inter_sum + (if let Cell::Occupied = seat { 1 } else { 0 })
+            })
+        })
     }
 
     fn get_occupied_adjacent_cells(&self, x: usize, y: usize) -> usize {
@@ -366,6 +368,30 @@ mod test {
         let file = read_file("./src/day_11/example_star2_1.txt");
         let grid = input_to_grid(&file);
         let occupied_neighbor_seats = grid.get_occupied_neighbor_seats(3, 4);
+        assert_eq!(8, occupied_neighbor_seats);
+    }
+
+    #[test]
+    fn check_example_day11_star2_2() {
+        let file = read_file("./src/day_11/example_star2_2.txt");
+        let grid = input_to_grid(&file);
+        let occupied_neighbor_seats = grid.get_occupied_neighbor_seats(1, 1);
+        assert_eq!(0, occupied_neighbor_seats);
+    }
+
+    #[test]
+    fn check_example_day11_star2_3() {
+        let file = read_file("./src/day_11/example_star2_3.txt");
+        let grid = input_to_grid(&file);
+        let occupied_neighbor_seats = grid.get_occupied_neighbor_seats(3, 3);
+        assert_eq!(0, occupied_neighbor_seats);
+    }
+
+    #[test]
+    fn check_example_day11_star2_4() {
+        let file = read_file("./src/day_11/example_star2_4.txt");
+        let grid = input_to_grid(&file);
+        let occupied_neighbor_seats = grid.get_occupied_neighbor_seats(3, 3);
         assert_eq!(8, occupied_neighbor_seats);
     }
 }
