@@ -12,6 +12,7 @@ struct Grid {
     cells: Vec<Vec<Cell>>,
     height: usize,
     width: usize,
+    star1: bool,
 }
 
 impl fmt::Display for Cell {
@@ -43,9 +44,13 @@ trait GridRules {
     fn get_next_state(&self) -> Grid;
     fn get_last_state(&self) -> Grid;
     fn get_number_of_occupied_seats(&self) -> usize;
+    fn star1(&self) -> bool;
 }
 
 impl GridRules for Grid {
+    fn star1(&self) -> bool {
+        self.star1
+    }
     fn get_next_state_of_cell(&self, x: usize, y: usize) -> Cell {
         self.cells
             .get(y)
@@ -53,14 +58,18 @@ impl GridRules for Grid {
             .map(|cell| match cell {
                 Cell::Floor => Cell::Floor,
                 Cell::Empty => {
-                    if self.get_occupied_adjacent_cells(x, y) == 0 {
+                    if self.star1() && self.get_occupied_adjacent_cells(x, y) == 0
+                        || !self.star1() && self.get_occupied_neighbor_seats(x, y) == 0
+                    {
                         Cell::Occupied
                     } else {
                         Cell::Empty
                     }
                 }
                 Cell::Occupied => {
-                    if self.get_occupied_adjacent_cells(x, y) >= 4 {
+                    if self.star1() && self.get_occupied_adjacent_cells(x, y) >= 4
+                        || !self.star1() && self.get_occupied_neighbor_seats(x, y) >= 5
+                    {
                         Cell::Empty
                     } else {
                         Cell::Occupied
@@ -214,6 +223,7 @@ impl GridRules for Grid {
             cells: grid,
             height: self.height,
             width: self.width,
+            star1: self.star1,
         }
     }
 
@@ -240,7 +250,7 @@ impl GridRules for Grid {
     }
 }
 
-fn input_to_grid(input: &str) -> Grid {
+fn input_to_grid(input: &str, star1: bool) -> Grid {
     let lines = input.lines().collect::<Vec<&str>>();
     let height = lines.len();
     let width = lines.get(0).unwrap_or(&"").len();
@@ -262,6 +272,7 @@ fn input_to_grid(input: &str) -> Grid {
         cells: cells,
         height: height,
         width: width,
+        star1: star1,
     }
 }
 
@@ -273,7 +284,7 @@ mod test {
     #[test]
     fn check_example1_day_11() {
         let file = read_file("./src/day_11/example.txt");
-        let grid = input_to_grid(&file);
+        let grid = input_to_grid(&file, true);
         println!("{}", grid);
         assert_eq!(10, grid.height);
         assert_eq!(10, grid.width);
@@ -282,7 +293,7 @@ mod test {
     #[test]
     fn check_adjacent_cells() {
         let file = read_file("./src/day_11/adjacent_cells.txt");
-        let grid = input_to_grid(&file);
+        let grid = input_to_grid(&file, true);
         assert_eq!(4, grid.get_occupied_adjacent_cells(1, 1));
         assert_eq!(2, grid.get_occupied_adjacent_cells(0, 0));
         assert_eq!(4, grid.get_occupied_adjacent_cells(1, 0));
@@ -292,7 +303,7 @@ mod test {
     #[test]
     fn check_next_state_of_cell() {
         let file = read_file("./src/day_11/adjacent_cells.txt");
-        let grid = input_to_grid(&file);
+        let grid = input_to_grid(&file, true);
         assert_eq!(Cell::Empty, grid.get_next_state_of_cell(1, 1));
         assert_eq!(Cell::Occupied, grid.get_next_state_of_cell(0, 1));
         assert_eq!(Cell::Floor, grid.get_next_state_of_cell(1, 0));
@@ -304,8 +315,8 @@ mod test {
     fn check_next_state_of_grid() {
         let file = read_file("./src/day_11/adjacent_cells.txt");
         let file2 = read_file("./src/day_11/adjacent_cells_2.txt");
-        let grid = input_to_grid(&file);
-        let grid2 = input_to_grid(&file2);
+        let grid = input_to_grid(&file, true);
+        let grid2 = input_to_grid(&file2, true);
         let next_grid = grid.get_next_state();
         assert_eq!(grid2, next_grid);
     }
@@ -318,12 +329,12 @@ mod test {
         let file4 = read_file("./src/day_11/example_state_4.txt");
         let file5 = read_file("./src/day_11/example_state_5.txt");
         let file6 = read_file("./src/day_11/example_state_6.txt");
-        let grid = input_to_grid(&file1);
-        let grid2 = input_to_grid(&file2);
-        let grid3 = input_to_grid(&file3);
-        let grid4 = input_to_grid(&file4);
-        let grid5 = input_to_grid(&file5);
-        let grid6 = input_to_grid(&file6);
+        let grid = input_to_grid(&file1, true);
+        let grid2 = input_to_grid(&file2, true);
+        let grid3 = input_to_grid(&file3, true);
+        let grid4 = input_to_grid(&file4, true);
+        let grid5 = input_to_grid(&file5, true);
+        let grid6 = input_to_grid(&file6, true);
         let grid = grid.get_next_state();
         assert_eq!(grid2, grid);
         let grid = grid.get_next_state();
@@ -340,8 +351,8 @@ mod test {
     fn check_last_state_of_grid_for_example() {
         let file = read_file("./src/day_11/example.txt");
         let last_file = read_file("./src/day_11/example_state_6.txt");
-        let grid = input_to_grid(&file);
-        let last_grid = input_to_grid(&last_file);
+        let grid = input_to_grid(&file, true);
+        let last_grid = input_to_grid(&last_file, true);
         let grid = grid.get_last_state();
         assert_eq!(last_grid, grid);
     }
@@ -349,7 +360,7 @@ mod test {
     #[test]
     fn check_number_of_occupied_seats() {
         let file = read_file("./src/day_11/example_state_6.txt");
-        let grid = input_to_grid(&file);
+        let grid = input_to_grid(&file, true);
         let number_of_seats = grid.get_number_of_occupied_seats();
         assert_eq!(37, number_of_seats);
     }
@@ -357,7 +368,7 @@ mod test {
     #[test]
     fn check_input_day_11_star1() {
         let file = read_file("./src/day_11/input.txt");
-        let grid = input_to_grid(&file);
+        let grid = input_to_grid(&file, true);
         let last_grid = grid.get_last_state();
         let number_of_seats = last_grid.get_number_of_occupied_seats();
         assert_eq!(2283, number_of_seats);
@@ -366,7 +377,7 @@ mod test {
     #[test]
     fn check_example_day11_star2() {
         let file = read_file("./src/day_11/example_star2_1.txt");
-        let grid = input_to_grid(&file);
+        let grid = input_to_grid(&file, true);
         let occupied_neighbor_seats = grid.get_occupied_neighbor_seats(3, 4);
         assert_eq!(8, occupied_neighbor_seats);
     }
@@ -374,7 +385,7 @@ mod test {
     #[test]
     fn check_example_day11_star2_2() {
         let file = read_file("./src/day_11/example_star2_2.txt");
-        let grid = input_to_grid(&file);
+        let grid = input_to_grid(&file, true);
         let occupied_neighbor_seats = grid.get_occupied_neighbor_seats(1, 1);
         assert_eq!(0, occupied_neighbor_seats);
     }
@@ -382,7 +393,7 @@ mod test {
     #[test]
     fn check_example_day11_star2_3() {
         let file = read_file("./src/day_11/example_star2_3.txt");
-        let grid = input_to_grid(&file);
+        let grid = input_to_grid(&file, true);
         let occupied_neighbor_seats = grid.get_occupied_neighbor_seats(3, 3);
         assert_eq!(0, occupied_neighbor_seats);
     }
@@ -390,7 +401,7 @@ mod test {
     #[test]
     fn check_example_day11_star2_4() {
         let file = read_file("./src/day_11/example_star2_4.txt");
-        let grid = input_to_grid(&file);
+        let grid = input_to_grid(&file, true);
         let occupied_neighbor_seats = grid.get_occupied_neighbor_seats(3, 3);
         assert_eq!(8, occupied_neighbor_seats);
     }
