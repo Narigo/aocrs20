@@ -405,4 +405,52 @@ mod test {
         let occupied_neighbor_seats = grid.get_occupied_neighbor_seats(3, 3);
         assert_eq!(8, occupied_neighbor_seats);
     }
+
+    #[test]
+    fn check_next_states_of_grid_star2_for_example() {
+        let file0 = read_file("./src/day_11/example.txt");
+        let file1 = read_file("./src/day_11/example_star2_state1.txt");
+        let file2 = read_file("./src/day_11/example_star2_state2.txt");
+        let file3 = read_file("./src/day_11/example_star2_state3.txt");
+        let file4 = read_file("./src/day_11/example_star2_state4.txt");
+        let file5 = read_file("./src/day_11/example_star2_state5.txt");
+        let file6 = read_file("./src/day_11/example_star2_state6.txt");
+        let grid0 = input_to_grid(&file0, false);
+        let grid1 = input_to_grid(&file1, false);
+        let grid2 = input_to_grid(&file2, false);
+        let grid3 = input_to_grid(&file3, false);
+        let grid4 = input_to_grid(&file4, false);
+        let grid5 = input_to_grid(&file5, false);
+        let grid6 = input_to_grid(&file6, false);
+        let grid = grid0.get_next_state();
+        assert_eq!(grid1, grid);
+        let grid = grid.get_next_state();
+        assert_eq!(grid2, grid);
+        let grid = grid.get_next_state();
+        assert_eq!(grid3, grid);
+        let grid = grid.get_next_state();
+        assert_eq!(grid4, grid);
+        let grid = grid.get_next_state();
+        assert_eq!(grid5, grid);
+        let grid = grid.get_next_state();
+        assert_eq!(grid6, grid);
+    }
+
+    #[test]
+    fn check_last_state_of_grid_star2_for_example() {
+        let file = read_file("./src/day_11/example.txt");
+        let last_file = read_file("./src/day_11/example_star2_state6.txt");
+        let grid = input_to_grid(&file, false);
+        let last_grid = input_to_grid(&last_file, false);
+        let grid = grid.get_last_state();
+        assert_eq!(last_grid, grid);
+    }
+
+    #[test]
+    fn check_number_of_occupied_seats_star2() {
+        let file = read_file("./src/day_11/example_star2_state6.txt");
+        let grid = input_to_grid(&file, false);
+        let number_of_seats = grid.get_number_of_occupied_seats();
+        assert_eq!(26, number_of_seats);
+    }
 }
