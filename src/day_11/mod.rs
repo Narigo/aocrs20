@@ -453,4 +453,13 @@ mod test {
         let number_of_seats = grid.get_number_of_occupied_seats();
         assert_eq!(26, number_of_seats);
     }
+
+    #[test]
+    fn check_input_day11_star2() {
+        let file = read_file("./src/day_11/input.txt");
+        let grid = input_to_grid(&file, false);
+        let last_state = grid.get_last_state();
+        let number_of_seats = last_state.get_number_of_occupied_seats();
+        assert_eq!(2054, number_of_seats);
+    }
 }
