@@ -199,4 +199,13 @@ mod test {
         let (_, distance) = ship.manhattan_distance(commands);
         assert_eq!(25, distance);
     }
+
+    #[test]
+    fn check_day_12_star1_input_manhattan_distance() {
+        let file = read_file("./src/day_12/input.txt");
+        let commands = input_to_commands(&file);
+        let ship = Ship::new();
+        let (_, distance) = ship.manhattan_distance(commands);
+        assert_eq!(759, distance);
+    }
 }
