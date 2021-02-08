@@ -1,5 +1,3 @@
-use std::fmt;
-
 #[derive(Debug, PartialEq)]
 enum Command {
     North(i64),
@@ -41,20 +39,27 @@ enum Direction {
 }
 
 #[derive(Clone)]
-struct ManhattanDistance {
+struct Point {
     north_south: i64,
     east_west: i64,
-}
-
-trait ManhattanDistanceCalculator {
-    fn new() -> Self;
-    fn get(&self) -> i64;
 }
 
 #[derive(Clone)]
 struct Ship {
     facing: Direction,
-    current_distance: ManhattanDistance,
+    current_distance: Point,
+}
+
+#[derive(Clone)]
+struct Waypoint {
+    north_south: i64,
+    east_west: i64,
+}
+
+#[derive(Clone)]
+struct ShipStar2 {
+    waypoint: Waypoint,
+    current_position: Point,
 }
 
 trait ShipFunctions
@@ -93,7 +98,7 @@ impl ShipFunctions for Ship {
     fn new() -> Ship {
         Ship {
             facing: Direction::East,
-            current_distance: ManhattanDistance {
+            current_distance: Point {
                 north_south: 0,
                 east_west: 0,
             },
@@ -113,28 +118,28 @@ impl ShipFunctions for Ship {
                 },
                 Command::East(value) => Ship {
                     facing: current_ship.facing,
-                    current_distance: ManhattanDistance {
+                    current_distance: Point {
                         north_south: current_ship.current_distance.north_south,
                         east_west: current_ship.current_distance.east_west + value,
                     },
                 },
                 Command::West(value) => Ship {
                     facing: current_ship.facing,
-                    current_distance: ManhattanDistance {
+                    current_distance: Point {
                         north_south: current_ship.current_distance.north_south,
                         east_west: current_ship.current_distance.east_west - value,
                     },
                 },
                 Command::North(value) => Ship {
                     facing: current_ship.facing,
-                    current_distance: ManhattanDistance {
+                    current_distance: Point {
                         north_south: current_ship.current_distance.north_south + value,
                         east_west: current_ship.current_distance.east_west,
                     },
                 },
                 Command::South(value) => Ship {
                     facing: current_ship.facing,
-                    current_distance: ManhattanDistance {
+                    current_distance: Point {
                         north_south: current_ship.current_distance.north_south - value,
                         east_west: current_ship.current_distance.east_west,
                     },
@@ -148,7 +153,7 @@ impl ShipFunctions for Ship {
                     };
                     Ship {
                         facing: current_ship.facing,
-                        current_distance: ManhattanDistance {
+                        current_distance: Point {
                             north_south: current_ship.current_distance.north_south
                                 + (ns_mult * value),
                             east_west: current_ship.current_distance.east_west + (ew_mult * value),
@@ -160,6 +165,103 @@ impl ShipFunctions for Ship {
         let distance = current_ship.current_distance.north_south.abs()
             + current_ship.current_distance.east_west.abs();
         (current_ship, distance)
+    }
+}
+
+impl ShipFunctions for ShipStar2 {
+    fn new() -> ShipStar2 {
+        ShipStar2 {
+            waypoint: Waypoint {
+                north_south: 1,
+                east_west: 10,
+            },
+            current_position: Point {
+                north_south: 0,
+                east_west: 0,
+            },
+        }
+    }
+    fn manhattan_distance(&self, commands: Vec<Command>) -> (ShipStar2, i64) {
+        let mut ship = self.clone();
+        for command in commands.iter() {
+            let (next_waypoint, next_position) = match command {
+                Command::North(value) => (
+                    Waypoint {
+                        north_south: ship.waypoint.north_south + value,
+                        east_west: ship.waypoint.east_west,
+                    },
+                    ship.current_position,
+                ),
+                Command::South(value) => (
+                    Waypoint {
+                        north_south: ship.waypoint.north_south - value,
+                        east_west: ship.waypoint.east_west,
+                    },
+                    ship.current_position,
+                ),
+                Command::East(value) => (
+                    Waypoint {
+                        north_south: ship.waypoint.north_south,
+                        east_west: ship.waypoint.east_west + value,
+                    },
+                    ship.current_position,
+                ),
+                Command::West(value) => (
+                    Waypoint {
+                        north_south: ship.waypoint.north_south,
+                        east_west: ship.waypoint.east_west - value,
+                    },
+                    ship.current_position,
+                ),
+                Command::Left(angle) => {
+                    let x = (ship.waypoint.east_west * ((*angle as f64).to_radians().cos() as i64))
+                        - (ship.waypoint.north_south * ((*angle as f64).to_radians().sin() as i64));
+                    let y = (ship.waypoint.east_west * ((*angle as f64).to_radians().sin() as i64))
+                        + (ship.waypoint.north_south * ((*angle as f64).to_radians().cos() as i64));
+                    (
+                        Waypoint {
+                            north_south: y,
+                            east_west: x,
+                        },
+                        ship.current_position,
+                    )
+                }
+                Command::Right(angle) => {
+                    let x = (ship.waypoint.east_west * ((*angle as f64).to_radians().cos() as i64))
+                        + (ship.waypoint.north_south * ((*angle as f64).to_radians().sin() as i64));
+                    let y = -(ship.waypoint.east_west
+                        * ((*angle as f64).to_radians().sin() as i64))
+                        + (ship.waypoint.north_south * ((*angle as f64).to_radians().cos() as i64));
+                    (
+                        Waypoint {
+                            north_south: y,
+                            east_west: x,
+                        },
+                        ship.current_position,
+                    )
+                }
+                Command::Forward(value) => {
+                    let north_south =
+                        ship.current_position.north_south + ship.waypoint.north_south * value;
+                    let east_west =
+                        ship.current_position.east_west + ship.waypoint.east_west * value;
+                    (
+                        ship.waypoint,
+                        Point {
+                            north_south: north_south,
+                            east_west: east_west,
+                        },
+                    )
+                }
+            };
+            ship = ShipStar2 {
+                waypoint: next_waypoint,
+                current_position: next_position,
+            };
+        }
+        let distance =
+            ship.current_position.north_south.abs() + ship.current_position.east_west.abs();
+        (ship, distance)
     }
 }
 
@@ -207,5 +309,60 @@ mod test {
         let ship = Ship::new();
         let (_, distance) = ship.manhattan_distance(commands);
         assert_eq!(759, distance);
+    }
+
+    #[test]
+    fn check_day_12_star2_example_single_steps() {
+        let ship = ShipStar2::new();
+        let distance = ship.current_position.north_south + ship.current_position.east_west;
+        assert_eq!(1, ship.waypoint.north_south);
+        assert_eq!(10, ship.waypoint.east_west);
+        assert_eq!(0, ship.current_position.north_south);
+        assert_eq!(0, ship.current_position.east_west);
+        assert_eq!(0, distance);
+        let commands = vec![Command::Forward(10)];
+        let (ship, distance) = ship.manhattan_distance(commands);
+        assert_eq!(1, ship.waypoint.north_south);
+        assert_eq!(10, ship.waypoint.east_west);
+        assert_eq!(10, ship.current_position.north_south);
+        assert_eq!(100, ship.current_position.east_west);
+        assert_eq!(110, distance);
+        let commands = vec![Command::North(3)];
+        let (ship, distance) = ship.manhattan_distance(commands);
+        assert_eq!(4, ship.waypoint.north_south);
+        assert_eq!(10, ship.waypoint.east_west);
+        assert_eq!(10, ship.current_position.north_south);
+        assert_eq!(100, ship.current_position.east_west);
+        assert_eq!(110, distance);
+        let commands = vec![Command::Forward(7)];
+        let (ship, distance) = ship.manhattan_distance(commands);
+        assert_eq!(4, ship.waypoint.north_south);
+        assert_eq!(10, ship.waypoint.east_west);
+        assert_eq!(38, ship.current_position.north_south);
+        assert_eq!(170, ship.current_position.east_west);
+        assert_eq!(208, distance);
+        let commands = vec![Command::Right(90)];
+        let (ship, distance) = ship.manhattan_distance(commands);
+        assert_eq!(-10, ship.waypoint.north_south);
+        assert_eq!(4, ship.waypoint.east_west);
+        assert_eq!(38, ship.current_position.north_south);
+        assert_eq!(170, ship.current_position.east_west);
+        assert_eq!(208, distance);
+        let commands = vec![Command::Forward(11)];
+        let (ship, distance) = ship.manhattan_distance(commands);
+        assert_eq!(-10, ship.waypoint.north_south);
+        assert_eq!(4, ship.waypoint.east_west);
+        assert_eq!(-72, ship.current_position.north_south);
+        assert_eq!(214, ship.current_position.east_west);
+        assert_eq!(286, distance);
+    }
+
+    #[test]
+    fn check_day_12_star2_example() {
+        let file = read_file("./src/day_12/example.txt");
+        let commands = input_to_commands(&file);
+        let ship = ShipStar2::new();
+        let (_, distance) = ship.manhattan_distance(commands);
+        assert_eq!(286, distance);
     }
 }
