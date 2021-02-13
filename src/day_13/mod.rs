@@ -18,12 +18,17 @@ fn from_input(input: &String) -> (ArrivalTime, Vec<Bus>) {
 fn get_earliest_bus(arrival_time: ArrivalTime, busses: Vec<Bus>) -> Bus {
     let mut best_bus = busses[0];
     for bus in busses[1..].iter() {
-        let time_before = best_bus * (arrival_time / best_bus + 1) % best_bus;
-        let time_this = bus * (arrival_time / bus) % bus;
-        println!("best_bus = {}, time = {}", best_bus, time_before);
-        println!("     bus = {}, time = {}", bus, time_this);
-        if time_this < time_before {
-            best_bus = *bus;
+        let min_of_both = best_bus.min(*bus);
+        for i in 0..min_of_both {
+            let best_bus_wins = ((arrival_time + i) % best_bus) == 0;
+            let bus_wins = ((arrival_time + i) % bus) == 0;
+            if best_bus_wins {
+                break;
+            }
+            if bus_wins {
+                best_bus = *bus;
+                break;
+            }
         }
     }
     best_bus
