@@ -68,4 +68,14 @@ mod test {
         assert_eq!(5, wait_time);
         assert_eq!(295, earliest * wait_time);
     }
+
+    #[test]
+    fn check_day_13_star1_input() {
+        let file = read_file("./src/day_13/input.txt");
+        let (arrival_time, busses) = from_input(&file);
+        let (earliest, wait_time) = get_earliest_bus(arrival_time, busses);
+        assert_eq!(601, earliest);
+        assert_eq!(6, wait_time);
+        assert_eq!(3606, earliest * wait_time);
+    }
 }
