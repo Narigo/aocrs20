@@ -1,5 +1,6 @@
 type Bus = usize;
 type ArrivalTime = usize;
+type StartTime = usize;
 type WaitTime = usize;
 
 fn from_input(input: &String) -> (ArrivalTime, Vec<Option<Bus>>) {
@@ -38,6 +39,21 @@ fn get_earliest_bus(arrival_time: ArrivalTime, busses: Vec<Option<Bus>>) -> (Bus
         }
     }
     (best_bus, wait_time)
+}
+
+fn get_earliest_time(busses: Vec<Option<Bus>>) -> StartTime {
+    let mut i = busses.len();
+    loop {
+        let found = busses.iter().enumerate().all(|(index, bus)| match bus {
+            Some(id) => (i - (busses.len() - index)) % id == 0,
+            None => true,
+        });
+        if found || i > (1068781 + busses.len() * 2) {
+            break;
+        }
+        i += 1;
+    }
+    i - busses.len()
 }
 
 #[cfg(test)]
@@ -92,5 +108,13 @@ mod test {
         assert_eq!(601, earliest);
         assert_eq!(6, wait_time);
         assert_eq!(3606, earliest * wait_time);
+    }
+
+    #[test]
+    fn check_day_13_star2_example() {
+        let file = read_file("./src/day_13/example.txt");
+        let (_, busses) = from_input(&file);
+        let time = get_earliest_time(busses);
+        assert_eq!(1068781, time);
     }
 }
