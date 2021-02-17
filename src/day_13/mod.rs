@@ -42,25 +42,45 @@ fn get_earliest_bus(arrival_time: ArrivalTime, busses: Vec<Option<Bus>>) -> (Bus
 }
 
 fn get_earliest_time(busses: Vec<Option<Bus>>) -> StartTime {
-    let min_jump = busses.first().unwrap().unwrap_or(1);
-    let mut i = busses.len();
-    loop {
-        let found = busses.iter().enumerate().all(|(index, bus)| match bus {
-            Some(id) => (i - (busses.len() - index)) % id == 0,
-            None => true,
-        });
-        if found {
-            break;
+    let mut i = 0;
+    let mut min_next_jump = busses.first().unwrap().unwrap_or(1);
+    for ptr in 1..busses.len() {
+        loop {
+            if busses.get(ptr).is_none() {
+                break;
+            }
+            let found = busses[0..(ptr + 1)]
+                .iter()
+                .enumerate()
+                .all(|(index, bus)| match bus {
+                    Some(id) => (i + index) % id == 0,
+                    None => true,
+                });
+
+            if found {
+                min_next_jump = busses[0..(ptr + 1)].iter().fold(1, |acc, bus| match bus {
+                    Some(id) => acc * id,
+                    None => acc,
+                });
+                break;
+            }
+            i += min_next_jump;
         }
-        i += min_jump;
     }
-    i - busses.len()
+    i
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
     use crate::util::*;
+
+    #[test]
+    fn check_day_13_x() {
+        let busses = vec![Some(7), Some(13), Some(3)];
+        let time = get_earliest_time(busses);
+        assert_eq!(91, time);
+    }
 
     #[test]
     fn check_day_13() {}
@@ -149,5 +169,13 @@ mod test {
         let (_, busses) = from_input(&file);
         let time = get_earliest_time(busses);
         assert_eq!(1202161486, time);
+    }
+
+    #[test]
+    fn check_day_13_star2_input() {
+        let file = read_file("./src/day_13/input.txt");
+        let (_, busses) = from_input(&file);
+        let time = get_earliest_time(busses);
+        assert_eq!(379786358533423, time);
     }
 }
