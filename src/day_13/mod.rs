@@ -42,16 +42,17 @@ fn get_earliest_bus(arrival_time: ArrivalTime, busses: Vec<Option<Bus>>) -> (Bus
 }
 
 fn get_earliest_time(busses: Vec<Option<Bus>>) -> StartTime {
+    let min_jump = busses.first().unwrap().unwrap_or(1);
     let mut i = busses.len();
     loop {
         let found = busses.iter().enumerate().all(|(index, bus)| match bus {
             Some(id) => (i - (busses.len() - index)) % id == 0,
             None => true,
         });
-        if found || i > (1068781 + busses.len() * 2) {
+        if found {
             break;
         }
-        i += 1;
+        i += min_jump;
     }
     i - busses.len()
 }
@@ -116,5 +117,37 @@ mod test {
         let (_, busses) = from_input(&file);
         let time = get_earliest_time(busses);
         assert_eq!(1068781, time);
+    }
+
+    #[test]
+    fn check_day_13_star2_example_2() {
+        let file = read_file("./src/day_13/example_star2_2.txt");
+        let (_, busses) = from_input(&file);
+        let time = get_earliest_time(busses);
+        assert_eq!(754018, time);
+    }
+
+    #[test]
+    fn check_day_13_star2_example_3() {
+        let file = read_file("./src/day_13/example_star2_3.txt");
+        let (_, busses) = from_input(&file);
+        let time = get_earliest_time(busses);
+        assert_eq!(779210, time);
+    }
+
+    #[test]
+    fn check_day_13_star2_example_4() {
+        let file = read_file("./src/day_13/example_star2_4.txt");
+        let (_, busses) = from_input(&file);
+        let time = get_earliest_time(busses);
+        assert_eq!(1261476, time);
+    }
+
+    #[test]
+    fn check_day_13_star2_example_5() {
+        let file = read_file("./src/day_13/example_star2_5.txt");
+        let (_, busses) = from_input(&file);
+        let time = get_earliest_time(busses);
+        assert_eq!(1202161486, time);
     }
 }
