@@ -80,12 +80,6 @@ impl GridRules for Grid {
     }
 
     fn get_occupied_neighbor_seats(&self, x: usize, y: usize) -> usize {
-        fn occupied_seat(seat: Option<&Cell>) -> bool {
-            match seat {
-                Some(Cell::Occupied) => true,
-                _ => false,
-            }
-        }
         fn occupied_seat2(matrix_spot: &mut Cell, seat: Option<&Cell>) {
             *matrix_spot = match seat {
                 Some(Cell::Occupied) => Cell::Occupied,

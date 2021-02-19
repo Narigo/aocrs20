@@ -76,13 +76,6 @@ mod test {
     use crate::util::*;
 
     #[test]
-    fn check_day_13_x() {
-        let busses = vec![Some(7), Some(13), Some(3)];
-        let time = get_earliest_time(busses);
-        assert_eq!(91, time);
-    }
-
-    #[test]
     fn check_day_13() {}
 
     #[test]

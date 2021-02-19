@@ -41,7 +41,7 @@ fn find_corrupt_instruction(instructions: Vec<Instruction>) -> Result<i32, i32> 
     loop {
         let mut copied = instructions.clone();
         let old_instruction = copied[current_mutated_line].clone();
-        std::mem::replace(
+        let _ = std::mem::replace(
             &mut copied[current_mutated_line],
             replace_instruction(old_instruction),
         );
