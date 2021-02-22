@@ -106,6 +106,8 @@ mod test {
     #[test]
     fn check_day_14_star1_input() {
         let file = read_file("./src/day_14/input.txt");
+        let memory = process_input(&file);
+        assert_eq!(13496669152158, memory.get_sum_in_memory());
     }
 
     #[test]
