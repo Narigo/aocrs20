@@ -21,8 +21,6 @@ impl BitmaskSystem for Memory {
     }
     fn write_value_to_memory(&mut self, memory_slot: usize, value: usize) -> Self {
         let in_binary = format!("{:0>36b}", value);
-        println!("in_binary={}", in_binary);
-        println!("mask     ={}", self.current_mask);
         let mut digits: Vec<char> = Vec::new();
         for (index, c) in self.current_mask.chars().enumerate() {
             let next_number = match c {
@@ -34,14 +32,12 @@ impl BitmaskSystem for Memory {
         }
         let num: String = digits.into_iter().collect();
         let value = usize::from_str_radix(&num, 2).unwrap();
-        println!("result   ={}", value);
         self.values.insert(memory_slot, value);
         self.clone()
     }
     fn get_sum_in_memory(&self) -> usize {
         let mut sum = 0;
         for (k, v) in self.values.iter() {
-            println!("k={} v={}", k, v);
             sum += v;
         }
         sum
