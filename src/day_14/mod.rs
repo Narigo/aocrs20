@@ -64,6 +64,60 @@ fn line_to_command(input: &str) -> Command {
     )
 }
 
+#[derive(Clone)]
+struct MemoryV2 {
+    current_mask: Bitmask,
+    values: HashMap<usize, usize>,
+}
+
+impl BitmaskSystem for MemoryV2 {
+    fn use_mask(&mut self, mask: Bitmask) -> Self {
+        self.current_mask = mask;
+        self.clone()
+    }
+    fn write_value_to_memory(&mut self, memory_slot: usize, value: usize) -> Self {
+        let in_binary = format!("{:0>36b}", value);
+        println!("in_binary={}", in_binary);
+        println!("mask     ={}", self.current_mask);
+        let mut digits: Vec<char> = Vec::new();
+        for (index, c) in self.current_mask.chars().enumerate() {
+            let next_number = match c {
+                '0' => '0',
+                '1' => '1',
+                _ => in_binary.chars().nth(index).unwrap(),
+            };
+            digits.push(next_number);
+        }
+        let num: String = digits.into_iter().collect();
+        let value = usize::from_str_radix(&num, 2).unwrap();
+        println!("result   ={}", value);
+        self.values.insert(memory_slot, value);
+        self.clone()
+    }
+    fn get_sum_in_memory(&self) -> usize {
+        let mut sum = 0;
+        for (k, v) in self.values.iter() {
+            println!("k={} v={}", k, v);
+            sum += v;
+        }
+        sum
+    }
+}
+
+fn process_input_v2(input: &str) -> MemoryV2 {
+    let mut mem = MemoryV2 {
+        current_mask: "000000000000000000000000000000000000".to_owned(),
+        values: HashMap::new(),
+    };
+    for line in input.lines() {
+        match line_to_command(line) {
+            Command::Mask(mask) => mem.use_mask(mask),
+            Command::SetMemory(slot, value) => mem.write_value_to_memory(slot, value),
+        };
+    }
+    mem
+}
+
 fn process_input(input: &str) -> Memory {
     let mut mem = Memory {
         current_mask: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX".to_owned(),
@@ -109,6 +163,8 @@ mod test {
     #[test]
     fn check_day_14_star2_example() {
         let file = read_file("./src/day_14/example.txt");
+        let memory = process_input_v2(&file);
+        assert_eq!(208, memory.get_sum_in_memory());
     }
 
     #[test]
