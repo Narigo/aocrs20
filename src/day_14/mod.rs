@@ -3,8 +3,8 @@ use std::collections::HashMap;
 type Bitmask = String;
 
 trait BitmaskSystem {
-    fn use_mask(&mut self, mask: Bitmask) -> Self;
-    fn write_value_to_memory(&mut self, memory_slot: usize, value: usize) -> Self;
+    fn use_mask(&mut self, mask: Bitmask) -> &Self;
+    fn write_value_to_memory(&mut self, memory_slot: usize, value: usize) -> &Self;
     fn get_sum_in_memory(&self) -> usize;
 }
 
@@ -15,11 +15,11 @@ struct Memory {
 }
 
 impl BitmaskSystem for Memory {
-    fn use_mask(&mut self, mask: Bitmask) -> Self {
+    fn use_mask(&mut self, mask: Bitmask) -> &Self {
         self.current_mask = mask;
-        self.clone()
+        self
     }
-    fn write_value_to_memory(&mut self, memory_slot: usize, value: usize) -> Self {
+    fn write_value_to_memory(&mut self, memory_slot: usize, value: usize) -> &Self {
         let in_binary = format!("{:0>36b}", value);
         let mut digits: Vec<char> = Vec::new();
         for (index, c) in self.current_mask.chars().enumerate() {
@@ -33,7 +33,7 @@ impl BitmaskSystem for Memory {
         let num: String = digits.into_iter().collect();
         let value = usize::from_str_radix(&num, 2).unwrap();
         self.values.insert(memory_slot, value);
-        self.clone()
+        self
     }
     fn get_sum_in_memory(&self) -> usize {
         let mut sum = 0;
@@ -71,28 +71,47 @@ struct MemoryV2 {
 }
 
 impl BitmaskSystem for MemoryV2 {
-    fn use_mask(&mut self, mask: Bitmask) -> Self {
+    fn use_mask(&mut self, mask: Bitmask) -> &Self {
         self.current_mask = mask;
-        self.clone()
+        self
     }
-    fn write_value_to_memory(&mut self, memory_slot: usize, value: usize) -> Self {
-        let in_binary = format!("{:0>36b}", value);
+    fn write_value_to_memory(&mut self, memory_slot: usize, value: usize) -> &Self {
+        let in_binary = format!("{:0>36b}", memory_slot);
         println!("in_binary={}", in_binary);
         println!("mask     ={}", self.current_mask);
-        let mut digits: Vec<char> = Vec::new();
+        let mut memory_slots: Vec<Vec<char>> = Vec::new();
+        memory_slots.push(Vec::new());
         for (index, c) in self.current_mask.chars().enumerate() {
-            let next_number = match c {
-                '0' => '0',
-                '1' => '1',
-                _ => in_binary.chars().nth(index).unwrap(),
-            };
-            digits.push(next_number);
+            match c {
+                '0' => {
+                    for slot in memory_slots.iter_mut() {
+                        slot.push(in_binary.chars().nth(index).unwrap());
+                    }
+                }
+                '1' => {
+                    for slot in memory_slots.iter_mut() {
+                        slot.push('1');
+                    }
+                }
+                _ => {
+                    let mut new_slots = memory_slots.clone();
+                    for slot in memory_slots.iter_mut() {
+                        slot.push('0');
+                    }
+                    for slot in new_slots.iter_mut() {
+                        slot.push('1');
+                    }
+                    memory_slots.extend(new_slots);
+                }
+            }
         }
-        let num: String = digits.into_iter().collect();
-        let value = usize::from_str_radix(&num, 2).unwrap();
-        println!("result   ={}", value);
-        self.values.insert(memory_slot, value);
-        self.clone()
+        for slot in memory_slots.iter() {
+            let num: String = slot.into_iter().collect();
+            let mem_address = usize::from_str_radix(&num, 2).unwrap();
+            println!("result   ={} -> {}", mem_address, value);
+            self.values.insert(mem_address, value);
+        }
+        self
     }
     fn get_sum_in_memory(&self) -> usize {
         let mut sum = 0;
@@ -162,7 +181,7 @@ mod test {
 
     #[test]
     fn check_day_14_star2_example() {
-        let file = read_file("./src/day_14/example.txt");
+        let file = read_file("./src/day_14/example_star2.txt");
         let memory = process_input_v2(&file);
         assert_eq!(208, memory.get_sum_in_memory());
     }
