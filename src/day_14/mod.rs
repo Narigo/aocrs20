@@ -185,9 +185,10 @@ mod test {
         let memory = process_input_v2(&file);
         assert_eq!(208, memory.get_sum_in_memory());
     }
-
     #[test]
     fn check_day_14_star2_input() {
         let file = read_file("./src/day_14/input.txt");
+        let memory = process_input_v2(&file);
+        assert_eq!(3278997609887, memory.get_sum_in_memory());
     }
 }
